@@ -4,6 +4,11 @@ from mathutils import Vector, Euler, Quaternion, Matrix, Color
 from random import random
 from functools import reduce
 
+if bpy.app.version >= (4, 1):
+    from bpy.app.translations import pgettext_rpt as rpt_
+else:
+    from bpy.app.translations import pgettext_tip as rpt_
+
 bl_info = {
   'name': 'QuickMenu',
   'version': (3, 0, 1),
@@ -1314,7 +1319,9 @@ def draw_menu(self, items):
   for item in items:
     if 'mode' in item and item['mode'] != bpy.context.mode:
       continue
-    title = item['title']
+##修改翻译
+    title = rpt_(item['title'])#
+    #print(title)
     i += 1
     if i < 10 and not title.startswith('('):
       title = f'({i}) {title}'
@@ -1388,7 +1395,8 @@ def load_items(config_path):
   for item in obj['items']:
     # Split by "/" and remove whitespace
     path = re.split('\s*\/\s*', item['path'])
-    item['title'] = path[-1]
+##修改翻译
+    item['title'] = rpt_(path[-1])
     if len(path) == 1:
       app['items'].append(item)
     else:
@@ -1414,7 +1422,148 @@ def find_keymap_item(km, idname):
     if keymap_item.idname == idname:
       return keymap_item
   return None
- 
+
+
+class TranslationHelper():
+    def __init__(self, name: str, data: dict, lang='zh_CN'):
+        self.name = name
+        self.translations_dict = dict()
+
+        for src, src_trans in data.items():
+            key = ("Operator", src)
+            self.translations_dict.setdefault(lang, {})[key] = src_trans
+            key = ("*", src)
+            self.translations_dict.setdefault(lang, {})[key] = src_trans
+
+    def register(self):
+        try:
+            bpy.app.translations.register(self.name, self.translations_dict)
+        except(ValueError):
+            pass
+
+    def unregister(self):
+        bpy.app.translations.unregister(self.name)
+
+zhdata = { 
+    "Reload Menu": "重置默认菜单",
+    "Edit Menu": "编辑菜单(JSON)",
+    "(Q) Delete and Split": "(Q) 删除并拆分",
+    "(W) UV and Textures": "(W) UV 和纹理",
+    "(E) Cut": "(E) 切割",
+    "(R) Animation": "(R) 动画",
+    "(A) Snapping": "(A) 对齐",
+    "(D) Tool": "(D) 工具",
+    "(F) Mode": "(F) 模式",
+    "(Z) Files": "(Z) 文件",
+    "(C) Select Linked All": "(C) 选择链接的所有对象",
+    "(V) View Selected or Camera": "(V) 查看所选或摄像机",
+    "Separate or Join": "分离或合并",
+    "Shade Smooth or Flat": "平滑或平坦着色",
+    "Hide or Unhide": "隐藏或取消隐藏",
+    "Origin To Bottom": "原点到底部",
+    "(Q) Toggle Proportional Editing": "(Q) 切换比例编辑",
+    "(W) Toggle Wireframe": "(W) 切换线框",
+    "(E) Rotate 90": "(E) 旋转 90°",
+    "(A) Mirror Transform": "(A) 镜像变换",
+    "(D) Make Single User": "(D) 使单用户",
+    "(F) Make Links": "(F) 创建链接",
+    "(Z) Make Parent": "(Z) 创建父级",
+    "(X) Toggle Correct Face Attributes": "(X) 切换正确的面属性",
+    "(V) Clear Modifiers": "(V) 清除修改器",
+    "Select Ring Or Loop": "选择环或循环",
+    "Select More Or Less": "选择更多或更少",
+    "Select Region or Loop": "选择区域或循环",
+    "Select View Parallel Edges": "选择视图平行边",
+    "Select View Perpendicular Faces": "选择视图垂直面",
+    "Expand Selection": "扩展选择",
+    "(Q) Select Linked Flat": "(Q) 选择链接的平面",
+    "(W) Select Loose": "(W) 选择松散的",
+    "(A) Invert Selection Connected": "(A) 反转连接的选择",
+    "(D) Select Sharp Edges": "(D) 选择锐边",
+    "(X) Random": "(X) 随机",
+    "(C) Checker Deselect": "(C) 棋盘取消选择",
+    "Solidify Edges": "边缘实体化",
+    "Selection To Box": "选择到框",
+    "Selection To Cylinder": "选择到圆柱",
+    "Circles On Faces": "圆圈在面上",
+    "(Q) Instantiate": "(Q) 实例化",
+    "(W) Connect Islands": "(W) 连接岛屿",
+    "(E) Extrude Both Ways": "(E) 双向挤出",
+    "(R) Panel": "(R) 面板",
+    "(Y) Cables": "(Y) 电缆",
+    "(U) Convex Hull": "(U) 凸包",
+    "(G) Edges To Ropes": "(G) 边缘到绳索",
+    "(D) Mirror": "(D) 镜像",
+    "(F) Array": "(F) 数组",
+    "Topology Expand Offset": "拓扑展开偏移",
+    "(Q) Flip Normals": "(Q) 翻转法线",
+    "(W) Vertices Smooth": "(W) 顶点平滑",
+    "(R) Randomize": "(R) 随机化",
+    "(A) Snap Rotation By Normal": "(A) 通过法线捕捉旋转",
+    "(D) Shrinkwrap": "(D) 收缩包裹",
+    "(F) Flatten": "(F) 扁平化",
+    "(G) Noise": "(G) 噪音",
+    "(X) Damage": "(X) 损坏",
+    "Chunks": "块",
+    "(Q) Delete View Perpendicular": "(Q) 删除视图垂直",
+    "(E) Edge Split": "(E) 边缘拆分",
+    "(R) Delete Unselected": "(R) 删除未选择的",
+    "(S) Split": "(S) 拆分",
+    "Cube Project": "立方体投影",
+    "View Project": "视图投影",
+    "(Q) Smart UV Project": "(Q) 智能 UV 投影",
+    "(W) Transform UVs": "(W) 变换 UV",
+    "(E) Rotate UVs 90": "(E) 旋转 UV 90°",
+    "(D) Set Vertex Color": "(D) 设置顶点颜色",
+    "(F) Select By Vertex Color": "(F) 通过顶点颜色选择",
+    "Inset Cut": "插入切割",
+    "Panel Cut": "面板切割",
+    "Groove Cut": "凹槽切割",
+    "Pipe Cut": "管道切割",
+    "(Q) Grid Slice": "(Q) 网格切片",
+    "(E) Knife Intersect": "(E) 刀交叉",
+    "(R) Grid Cut": "(R) 网格切割",
+    "(T) Plane Intersect": "(T) 平面交叉",
+    "(A) Hull Cut": "(A) 外壳切割",
+    "Parent To New Empty": "父级到新的空对象",
+    "Add Bone To Selection": "添加骨骼到选择",
+    "Add Collision": "添加碰撞",
+    "Add Cloth": "添加布料",
+    "Animate Rotation": "动画旋转",
+    "(Q) Toggle Auto Keying": "(Q) 切换自动键入",
+    "(Z) Clear Drivers": "(Z) 清除驱动程序",
+    "(X) Drivers Set Use Self": "(X) 驱动设置自用",
+    "Bounding Box Pivot": "边界框枢轴",
+    "Individual Pivot": "个别枢轴",
+    "3D Cursor Pivot": "3D 光标枢轴",
+    "Normal Orientation": "法线方向",
+    "New Orientation": "新方向",
+    "(V) Vertices": "(V) 顶点",
+    "(F) Faces": "(F) 面",
+    "(R) Grid": "(R) 网格",
+    "(C) Closest": "(C) 最近",
+    "(E) Center": "(E) 中心",
+    "Add Cube": "添加立方体",
+    "Add Sphere": "添加球体",
+    "Add Ico Sphere": "添加 Ico 球体",
+    "(Q) Shear": "(Q) 剪切",
+    "(W) Annotate": "(W) 注释",
+    "(E) Measure": "(E) 测量",
+    "(R) Knife": "(R) 刀",
+    "(Q) Export GLB": "(Q) 导出 GLB",
+    "(W) Export GLTF Selected Object": "(W) 导出选择的 GLTF 对象",
+    "(E) Export GLTF Active Collection": "(E) 导出活动 GLTF 集合",
+    "(A) Export FBX": "(A) 导出 FBX",
+    "(S) Export FBX Collections": "(S) 导出 FBX 集合",
+    "(D) Export FBX Collections (Unpack Data and Apply Transform)": "(D) 导出FBX集合(解包数据并应用变换)",
+    "(Z) Reimport All Textures": "(Z) 重新导入所有纹理",
+    "(X) Unpack All Data To Files": "(X) 解包所有数据到文件"    
+   
+}
+
+QuickArea_zh_CN = TranslationHelper('QuickArea_zh_CN', zhdata)
+QuickArea_zh_HANS = TranslationHelper('QuickArea_zh_HANS', zhdata, lang='zh_HANS')
+
 def register():
   for cls in get_classes():
     if cls.__name__ not in bpy.types.Scene.__annotations__:
@@ -1432,9 +1581,20 @@ def register():
   # Load menu items from the config
   load_items(config_path)
 
+  if bpy.app.version < (4, 0, 0):
+        QuickArea_zh_CN.register()
+  else:
+      QuickArea_zh_CN.register()
+      QuickArea_zh_HANS.register()
 def unregister():
   for cls in get_classes(): bpy.utils.unregister_class(cls)
   del bpy.types.Scene.quick_menu
+
+  if bpy.app.version < (4, 0, 0):
+        QuickArea_zh_CN.unregister()
+  else:
+      QuickArea_zh_CN.unregister()
+      QuickArea_zh_HANS.unregister()
 
 # Call if ran as script
 if __name__ == '__main__': register()
